@@ -2,6 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -231,6 +232,7 @@ export default function HomePage() {
   const [email, setEmail] = useState("");
   const [newsletterMessage, setNewsletterMessage] = useState("");
   const [checkoutMessage, setCheckoutMessage] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -358,7 +360,7 @@ export default function HomePage() {
     );
   }
 
-  function subscribe(event: React.FormEvent<HTMLFormElement>) {
+  function subscribe(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
@@ -372,11 +374,78 @@ export default function HomePage() {
     setEmail("");
   }
 
-  function demoCheckout() {
+   
+async function placeOrder() {
+  if (!cartDetails.length) return;
+
+  const getInput = (id: string) =>
+    document.getElementById(id) as HTMLInputElement | null;
+
+  const customerName =
+    getInput("checkout-name")?.value.trim() ?? "";
+  const phone =
+    getInput("checkout-phone")?.value.trim() ?? "";
+  const address =
+    getInput("checkout-address")?.value.trim() ?? "";
+  const city =
+    getInput("checkout-city")?.value.trim() ?? "";
+  const notes =
+    getInput("checkout-notes")?.value.trim() ?? "";
+
+  if (!customerName || !phone || !address || !city) {
     setCheckoutMessage(
-      "Demo only: no order was placed. Configure a database and secure server-side checkout before accepting orders.",
+      "Please enter your name, phone number, address and city."
     );
+    return;
   }
+
+  setCheckoutLoading(true);
+  setCheckoutMessage("");
+
+  try {
+    const response = await fetch("/api/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        customerName,
+        phone,
+        address,
+        city,
+        notes,
+        items: cart.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(
+        result.error || "Unable to place your order."
+      );
+    }
+
+    setCheckoutMessage(
+      `Order placed successfully! Order number: ${result.orderNumber}. Payment: Cash on Delivery.`
+    );
+
+    setCart([]);
+    localStorage.removeItem("freshora-cart");
+  } catch (error) {
+    setCheckoutMessage(
+      error instanceof Error
+        ? error.message
+        : "Something went wrong. Please try again."
+    );
+  } finally {
+    setCheckoutLoading(false);
+  }
+}
+
 
   return (
     <>
@@ -884,8 +953,8 @@ export default function HomePage() {
             <div>
               <h4>Get in touch</h4>
               <p>Pakistan · Prices in PKR</p>
-              <a href="mailto:dralinasirwarraich@gmail.com">
-                dralinasirwarraich@gmail.com
+              <a href="mailto:hello@example.com">
+                hello@example.com
               </a>
             </div>
           </div>
@@ -995,24 +1064,75 @@ export default function HomePage() {
                 <span>{money(subtotal)}</span>
               </div>
 
+<div className="checkout-fields">
+  <h3>Delivery details</h3>
+
+  <input
+    id="checkout-name"
+    type="text"
+    placeholder="Your full name"
+    aria-label="Your full name"
+    autoComplete="name"
+    required
+  />
+
+  <input
+    id="checkout-phone"
+    type="tel"
+    placeholder="Phone number"
+    aria-label="Phone number"
+    autoComplete="tel"
+    required
+  />
+
+  <input
+    id="checkout-address"
+    type="text"
+    placeholder="Full delivery address"
+    aria-label="Full delivery address"
+    autoComplete="street-address"
+    required
+  />
+
+  <input
+    id="checkout-city"
+    type="text"
+    placeholder="City"
+    aria-label="City"
+    autoComplete="address-level2"
+    required
+  />
+
+  <input
+    id="checkout-notes"
+    type="text"
+    placeholder="Order notes (optional)"
+    aria-label="Order notes"
+  />
+
+  <p>Payment method: Cash on Delivery</p>
+</div>
+
               {checkoutMessage && (
                 <div className="notice" role="status">
                   {checkoutMessage}
                 </div>
               )}
 
-              <button
-                className="btn btn-primary checkout-button"
-                disabled={!cartDetails.length}
-                onClick={demoCheckout}
-              >
-                Continue to checkout <ArrowRight size={16} />
-              </button>
+              
+<button
+  className="btn btn-primary checkout-button"
+  disabled={!cartDetails.length || checkoutLoading}
+  onClick={placeOrder}
+>
+  {checkoutLoading ? "Placing order..." : "Place COD order"}
+  <ArrowRight size={16} />
+</button>
 
-              <p className="checkout-disclaimer">
-                Demo only — checkout does not place an order or collect
-                payment.
-              </p>
+<p className="checkout-disclaimer">
+  Pay cash when your groceries are delivered.
+</p>
+
             </div>
           </aside>
         </div>

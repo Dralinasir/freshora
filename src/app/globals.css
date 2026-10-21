@@ -1114,3 +1114,35 @@ summary:focus-visible {
     padding: 18px;
   }
 }
+
+.checkout-fields {
+  display: grid;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+.checkout-fields h3 {
+  margin: 0;
+  font-size: 17px;
+}
+
+.checkout-fields input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid #d9e2d9;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  font: inherit;
+}
+
+.checkout-fields input:focus {
+  outline: 2px solid #247447;
+  outline-offset: 1px;
+}
+
+.checkout-fields p {
+  margin: 0;
+  font-size: 14px;
+}
