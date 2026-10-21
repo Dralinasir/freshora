@@ -421,7 +421,21 @@ async function placeOrder() {
       }),
     });
 
-    const result = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+
+if (!contentType.includes("application/json")) {
+  throw new Error(
+    "Checkout API nahi mil rahi. src/app/api/checkout/route.ts check karein."
+  );
+}
+
+const result = await response.json();
+
+if (!response.ok) {
+  throw new Error(
+    result.error || "Unable to place your order."
+  );
+}
 
     if (!response.ok) {
       throw new Error(
@@ -953,8 +967,8 @@ async function placeOrder() {
             <div>
               <h4>Get in touch</h4>
               <p>Pakistan · Prices in PKR</p>
-              <a href="mailto:hello@example.com">
-                hello@example.com
+              <a href="mailto:dralinasirwarraich@gmail.com">
+                dralinasirwarraich@gmail.com
               </a>
             </div>
           </div>
