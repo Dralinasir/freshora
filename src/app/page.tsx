@@ -884,8 +884,8 @@ export default function HomePage() {
             <div>
               <h4>Get in touch</h4>
               <p>Pakistan · Prices in PKR</p>
-              <a href="mailto:hello@example.com">
-                hello@example.com
+              <a href="mailto:dralinasirwarraich@gmail.com">
+                dralinasirwarraich@gmail.com
               </a>
             </div>
           </div>
