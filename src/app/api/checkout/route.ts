@@ -128,7 +128,15 @@ export async function POST(request: Request) {
       .single();
 
     if (orderError || !order) {
-      console.error("Order insert failed:", orderError?.message);
+  console.error("Order insert failed:", orderError);
+
+  return NextResponse.json(
+    {
+      error: orderError?.message || "Could not save the order.",
+    },
+    { status: 500 },
+  );
+}
       return NextResponse.json(
         { error: "Could not save the order. Please try again." },
         { status: 500 },
